@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding:0;
+        }
+        html, body {
+            height: 100vh;
+        }
+        .wrapper {
+            display: flex;
+            height: 100%;
+        }
+        aside {
+            width: 200px;
+            background: #b0c9ff;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100%;
+        }
+        main {
+            flex: 1;
+            background-color: #edf2ff;
+            height: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .a-item {
+            display: block;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color: #333333;
+            text-decoration: none;
+            margin: 40px 0;
+            font-weight: bold;
+            &:hover{
+                background-color: rgba(255, 255, 255, 0.4);
+            }
+        }
+        .top-list {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-top: 30px;
+        }
+        .top-list select {
+            width: 220px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;;
+        }
+        button {
+            color: #FFFFFF;
+            background-color: cornflowerblue;
+            padding: 5px;
+            margin: 0 5px;
+            border: none;
+            outline: none;
+            cursor: pointer;;
+        }
+        select {
+            padding: 5px;
+        }
+        #no-data {
+            color: #FF0000;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            margin-top: 40px;
+            border-collapse: collapse;
+        }
+        table td{
+            padding: 10px;
+        }
+        thead {
+            background-color: #FFFFFF;
+        }
+        .img-list {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+            margin-top: 40px;
+        }
+        .img-item {
+            width: 500px;
+        }
+        .img-item img {
+            height: 230px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<div class="wrapper">
+    <!--nav -->
+    <aside>
+        <a class="a-item" href="./index.html">Home</a>
+        <a class="a-item" href="./fundraiser.html">Fundraiser</a>
+    </aside>
+    <main>
+        <div class="top-list">
+            <div class="top-i">
+                <select id="city-ref"></select>
+            </div>
+            <div class="top-i">
+                <select id="organizer-ref"></select>
+            </div>
+            <div class="top-i">
+                <select id="category-ref"></select>
+            </div>
+            <button id="search">Search</button>
+            <button id="reset">Reset</button>
+        </div>
+        <table cellpadding="10" border="1">
+            <thead>
+            <tr>
+                <th>CAPATION</th>
+                <th>CATEGORY</th>
+                <th>ORGANIZER</th>
+                <th>CITY</th>
+                <th>TARGET FUNDING</th>
+                <th>CURRENT FUNDING</th>
+            </tr>
+            </thead>
+            <tbody id="tableInner"></tbody>
+        </table>
+        <!-- no data -->
+        <div id="no-data">No Data</div>
+        <div class="img-list">
+            <div class="img-item">
+                <img src="./imgs/img2.png" alt="">
+                <div class="img-name">Public welfare action</div>
+            </div>
+            <div class="img-item">
+                <img src="./imgs/img3.png" alt="">
+                <div class="img-name">Lend a helping hand and help each other</div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+<script>
+    const serverUrl = 'http://localhost:8090/api';
+    // get request method
+    const request = (url, searchQuery) => {
+        return new Promise((resolve) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.open('GET', `${serverUrl}/${url}?${searchQuery}`, true);
+            xmlHttp.send();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState === 4 && xmlHttp.status == 200) {
+                    resolve(JSON.parse(xmlHttp.responseText));
+                }
+            }
+        })
+    }
+    // get active fundraiser
+    const getFundraiser = () => {
+        const category_id = document.getElementById('category-ref').value;
+        const organizer = document.getElementById('organizer-ref').value;
+        const city = document.getElementById('city-ref').value;
+        // join query string
+        const searchQuery = `category_id=${category_id}&organizer=${organizer}&city=${city}`
+        const tableInner = document.querySelector('#tableInner');
+        // init dom
+        tableInner.innerHTML = "";
+        const noData = document.querySelector('#no-data');
+        // display none
+        noData.style.display = 'none';
+        request('getFundraiser', searchQuery).then(response => {
+            if (!response.length) {
+                noData.style.display = 'block';
+            } else {
+                // for handler
+                for (let i = 0; i < response.length; i++) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                    <td><a href="./detail.html?fundiaiser_id=${response[i].fundraiser_id}">${response[i].caption}</a></td>
+                    <td>${response[i].name}</td>
+                    <td>${response[i].organizer}</td>
+                    <td>${response[i].city}</td>
+                    <td>${response[i].target_funding}</td>
+                    <td>${response[i].current_funding}</td>
+            `;
+                    // render table data
+                    tableInner.appendChild(tr);
+                }
+            }
+        });
+    }
+    // reset fundraiser
+    function resetFundraiser() {
+        document.querySelector('#city-ref').value = '';
+        document.querySelector('#category-ref').value = '';
+        document.querySelector('#organizer-ref').value = '';
+        // get data again
+        getFundraiser();
+    }
+
+    // get option
+    request('getCategory').then(res => {
+        // default select option
+        document.querySelector('#category-ref').innerHTML = `<option selected value="">please select</option>`;
+        // set all option
+        for (let i = 0; i < res.length; i++) {
+            const optionDom = document.createElement('option');
+            optionDom.innerHTML = res[i].name;
+            optionDom.value = res[i].category_id;
+            document.querySelector('#category-ref').appendChild(optionDom);
+        }
+    });
+    // get option
+    request('getOrganizer').then(res => {
+        // default select option
+        document.querySelector('#organizer-ref').innerHTML = `<option selected value="">please select</option>`;
+        // set all option
+        for (let i = 0; i < res.length; i++) {
+            const optionDom = document.createElement('option');
+            optionDom.innerHTML = res[i].organizer;
+            optionDom.value = res[i].organizer;
+            document.querySelector('#organizer-ref').appendChild(optionDom);
+        }
+    });
+    // get option
+    request('getCity').then(res => {
+        // default select option
+        document.querySelector('#city-ref').innerHTML = `<option selected value="">please select</option>`;
+        // set all option
+        for (let i = 0; i < res.length; i++) {
+            const optionDom = document.createElement('option');
+            optionDom.innerHTML = res[i].city;
+            optionDom.value = res[i].city;
+            document.querySelector('#city-ref').appendChild(optionDom);
+        }
+    });
+
+    window.onload = () => {
+        // get fundraiser
+        getFundraiser();
+        // add click listener
+        document.getElementById('search').addEventListener('click', getFundraiser);
+        document.getElementById('reset').addEventListener('click', resetFundraiser);
+    };
+</script>
+</html>

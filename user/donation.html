@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding:0;
+        }
+        html, body {
+            height: 100vh;
+        }
+        .wrapper {
+            display: flex;
+            height: 100%;
+        }
+        aside {
+            width: 200px;
+            background: #b0c9ff;
+            padding: 10px;
+            box-sizing: border-box;
+            height: 100%;
+        }
+        main {
+            flex: 1;
+            background-color: #edf2ff;
+            height: 100%;
+            padding: 30px;
+            box-sizing: border-box;
+        }
+        .a-item {
+            display: block;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color: #333333;
+            text-decoration: none;
+            margin: 40px 0;
+            font-weight: bold;
+            &:hover{
+                background-color: rgba(255, 255, 255, 0.4);
+            }
+        }
+        .fundraiser-wrapper {
+            border: 1px solid #333333;
+            padding: 30px;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        .fundraiser-item {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .fundraiser-item span {
+            font-weight: bold;
+            color: #333333;
+            margin-right: 20px;
+        }
+        .fundraiser-item div {
+            color: #666666;
+        }
+        button {
+            color: #FFFFFF;
+            background-color: cornflowerblue;
+            padding: 5px;
+            margin: 0 5px;
+            border: none;
+            outline: none;
+            cursor: pointer;;
+        }
+        .img-list img {
+            margin-bottom: 30px;
+        }
+        .donation-wrapper div {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        .label {
+            width: 100px;
+            text-align: right;
+        }
+        .donation-wrapper input{
+            padding: 10px;
+            width: 300px;
+        }
+        .go-back {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <!--nav -->
+    <aside>
+        <a class="a-item" href="./index.html">Home</a>
+        <a class="a-item" href="./fundraiser.html">Fundraiser</a>
+    </aside>
+    <main>
+        <div class="img-list">
+            <img src="./imgs/img4.png" alt="">
+        </div>
+        <button onclick="goBack()" class="go-back">go Back</button>
+        <div class="fundraiser-wrapper">
+            <div class="fundraiser-item">
+                <span>caption</span>
+                <div id="caption-ref"></div>
+            </div>
+            <div class="fundraiser-item">
+                <span>category</span>
+                <div id="category-ref"></div>
+            </div>
+            <div class="fundraiser-item">
+                <span>organizer</span>
+                <div id="organizer-ref"></div>
+            </div>
+            <div class="fundraiser-item">
+                <span>city</span>
+                <div id="city-ref"></div>
+            </div>
+            <div class="fundraiser-item">
+                <span>target funding</span>
+                <div id="target-ref"></div>
+            </div>
+            <div class="fundraiser-item">
+                <span>current funding</span>
+                <div id="current-ref"></div>
+            </div>
+            <div class="donation-wrapper">
+                <div>
+                    <div class="label">Amount:</div>
+                    <input type="text" placeholder="Please enter the amount" id="donation-value">
+                </div>
+                <div>
+                    <div class="label">Giver:</div>
+                    <input type="text" placeholder="Please enter the giver" id="giver-value">
+                </div>
+            </div>
+            <button onclick="donation()">Donation</button>
+        </div>
+    </main>
+</div>
+</body>
+<script>
+    const serverUrl = 'http://localhost:8090/api';
+    // get request method
+    const request = (url, searchQuery) => {
+        return new Promise((resolve) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.open('GET', `${serverUrl}/${url}?${searchQuery}`, true);
+            xmlHttp.send();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState === 4 && xmlHttp.status == 200) {
+                    resolve(JSON.parse(xmlHttp.responseText));
+                }
+            }
+        })
+    }
+    // http post
+    function postService(url, data) {
+        return new Promise((resolve, reject) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.open('POST', serverUrl + '/' + url, true);
+            xmlHttp.setRequestHeader('Content-Type', 'application/json');
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status == 200) {
+                        resolve(xmlHttp.responseText);
+                    } else {
+                        reject(xmlHttp.responseText);
+                    }
+                }
+            }
+            xmlHttp.send(JSON.stringify(data));
+        });
+    }
+    let dataInfo = null;
+    // get detail info
+    request('getDetail', `fundraiser_id=${+location.search.split('=')[1]}`).then(res => {
+        // set value
+        dataInfo = res;
+        const {caption, name, organizer, city, target_funding, current_funding} = res;
+        document.querySelector('#caption-ref').innerText = caption;
+        document.querySelector('#category-ref').innerText = name;
+        document.querySelector('#organizer-ref').innerText = organizer;
+        document.querySelector('#city-ref').innerText = city;
+        document.querySelector('#target-ref').innerText = target_funding;
+        document.querySelector('#current-ref').innerText = current_funding;
+    });
+    // donation handler
+    function donation() {
+        const value = document.getElementById('donation-value').value;
+        const giver = document.getElementById('giver-value').value;
+        // valid required and number
+        if (!value) {
+            alert('Please enter amount');
+            return;
+        }
+        const regExp = new RegExp('^[0-9]+([.][0-9]{1,})?$', 'ig');
+        if (!regExp.test(value)){
+            alert('Please enter the amount, more than AUD 5');
+            return;
+        }
+        if(value < 5) {
+            alert('Must be at least AUD 5');
+            return;
+        }
+        // giver required
+        if(!giver) {
+            alert('Please enter giver');
+            return;
+        }
+        postService('donation', {
+            amount: value,
+            giver: giver,
+            fundraiser_id: +location.search.split('=')[1]
+        }).then(res => {
+            // donation success
+            alert(`Thank you for your donation to ${dataInfo.organizer}`);
+            goBack();
+        });
+    }
+    function goBack() {
+        // go last page
+        history.back();
+    }
+</script>
+</html>

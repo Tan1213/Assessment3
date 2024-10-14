@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>platform</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100vh;
+        }
+        .wrapper {
+            height: 100%;
+            background: url("./imgs/bg.png") no-repeat;
+            background-size: cover;
+        }
+        aside {
+            padding: 10px;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            position: absolute;
+            left: 30px;
+            top: 0px;
+        }
+        .a-item {
+            display: block;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            color: #333333;
+            text-decoration: none;
+            margin: 30px 40px;
+            background-color: #FFFFFF;
+            padding: 5px 10px;
+            box-shadow: 2px 2px 10px #999999;
+            &:hover{
+                background-color: rgba(255, 255, 255, 0.4);
+                color: #FF0000;
+            }
+        }
+        main {
+            padding: 30px;
+            text-align: center;
+            flex: 1;
+            box-sizing: border-box;
+        }
+        .title-header {
+            text-align: center;
+            font-weight: bold;
+            font-size: 40px;
+            color: #ff0000;
+            padding-top: 30px;
+        }
+        .sub-title {
+            text-align: center;
+            font-size: 26px;
+            margin-top: 30px;
+        }
+        main {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 50px;
+            align-items: center;
+        }
+        .img-info img{
+            width: 300px;
+            height: 300px;
+        }
+        .info-list {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            margin-left: 200px;
+        }
+        .info-item {
+            background-color: #FFFFFF;
+            padding: 30px;
+            margin-right: 50px;
+            box-shadow: 2px 2px 10px #999999;
+            text-align: left;
+        }
+        a {
+            text-decoration: none;
+            color: #333333;
+        }
+        #caption {
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom:10px;
+        }
+        .info-item div{
+            margin-bottom: 10px;
+        }
+        #current {
+            color: #FF0000;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        #city {
+            border-top: 1px solid #333333;
+            padding-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="title-header">
+        Crowdfunding System
+    </div>
+    <div class="sub-title">
+        Hope this system can help you realize your dream...
+    </div>
+    <!--nav -->
+    <aside>
+        <a class="a-item" href="./index.html">Home</a>
+        <a class="a-item" href="./fundraiser.html">Fundraiser</a>
+    </aside>
+    <main>
+        <div class="info-list"></div>
+        <div class="img-info">
+            <img src="./imgs/img1.png" alt="">
+        </div>
+    </main>
+</div>
+</body>
+<script>
+    const serverUrl = 'http://localhost:8090/api';
+    // get request method
+    const request = (url, searchQuery) => {
+        return new Promise((resolve) => {
+            const xmlHttp = new XMLHttpRequest();
+            xmlHttp.open('GET', `${serverUrl}/${url}?${searchQuery}`, true);
+            xmlHttp.send();
+            xmlHttp.onreadystatechange = function() {
+                if (xmlHttp.readyState === 4 && xmlHttp.status == 200) {
+                    resolve(JSON.parse(xmlHttp.responseText));
+                }
+            }
+        })
+    }
+    const getFundraiser = () => {
+        // join query string
+        const searchQuery = `category_id=&organizer=&city=`;
+        const infoList = document.getElementsByClassName('info-list')[0];
+        request('getFundraiser', searchQuery).then(response => {
+            for (let i = 0; i < 2; i++) {
+                const div = document.createElement('div');
+                div.className = 'info-item';
+                div.innerHTML = `
+                <a href="./detail.html?fundiaiser_id=${response[i].fundraiser_id}">
+                    <div id="caption">${response[i].caption}</div>
+                    <div id="category">${response[i].name}</div>
+                <div style="display: flex;align-items: center">
+                <div id="current">$${response[i].current_funding}</div>
+                <div id="target">$${response[i].target_funding}</div>
+                </div>
+                <div id="city">${response[i].city}</div>
+                <div id="organizer">${response[i].organizer}</div>
+                </a>
+            `;
+                infoList.appendChild(div);
+            }
+        });
+    }
+    getFundraiser();
+</script>
+</html>
