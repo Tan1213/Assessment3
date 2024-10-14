@@ -1,0 +1,130 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+body {
+    background: url("../imgs/bg.png") no-repeat;
+    background-size: 100vw 100vh;
+}
+.header {
+    height: 60px;
+    background-color: #ea4b08;
+    line-height: 60px;
+    padding: 0 20px;
+    color: #FFFFFF;
+    font-size: 24px;
+    font-weight: bold;
+}
+main {
+    padding: 20px;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+table td, table th {
+    padding: 5px;
+}
+.filter-wrapper {
+    display: flex;
+    align-content: center;
+    flex-wrap: wrap;
+}
+.filter-item {
+    margin: 0 10px 30px;
+    display: flex;
+    align-items: center;
+}
+.filter-item span {
+    font-weight: bold;
+}
+select {
+    width: 180px;
+    padding: 5px 10px;
+    border-radius: 30px;
+}
+button {
+    background-color: #999999;
+    outline: none;
+    color: #FFFFFF;
+    border-radius: 30px;
+    padding:5px 10px;
+    margin: 0 10px !important;
+    display: block;
+    cursor: pointer;
+    border: none;
+}
+a {
+    text-decoration: none;
+    color: unset;
+}
+.form-item{
+    display: flex;
+    margin-bottom: 15px;
+}
+.form-label {
+    font-weight: bold;
+    margin-right: 10px;
+    width: 150px;
+    text-align: right;
+}
+.error-tip {
+    color: #FF0000;
+    display: none;
+}
+.donation-list {
+    text-align: left;
+}
+.donation-title {
+    font-weight: bold;
+    color: rgba(0, 150, 136, 1);
+    font-size: 18px;
+    margin: 20px 0;
+}
+.donation-item {
+    background-color: #f1f1f1;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+input {
+    padding: 4px 10px;
+    border-radius: 20px;
+}
+.delete-btn {
+    background-color: #e15252;
+}
+table thead {
+    background-color: #ffe9e9;
+}
+table td {
+    text-align: center;
+}
+.unit {
+    font-size: 12px;
+    color: #666666;
+}
+.amount {
+    color: #ff0000;
+    font-weight: bold;
+    font-style: italic;
+}
+.active{
+    background-color: #00a300;
+    padding: 5px 10px;
+    color: #FFffff;
+    border-radius: 10px;
+}
+.unactive {
+    background-color: #cccccc
+;
+    padding: 5px 10px;
+    color: #FFffff;
+    border-radius: 10px;
+}
+.primary-btn {
+    background-color: #0a75dc;
+}
+.form-wrapper {
+    width: 600px;
+    margin: 30px auto;
+}
