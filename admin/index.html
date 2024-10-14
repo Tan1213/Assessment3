@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>CrowdFunding System</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+<div class="header">
+    <div class="header-name">Crowdfunding System</div>
+</div>
+<main>
+    <div class="filter-wrapper">
+        <div class="filter-item">
+            <span>Category：</span>
+            <select id="categorySelectDom" value="">
+                <option value="" disabled selected>please select...</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span>Organizer：</span>
+            <select id="organizerSelectDom"  value="">
+                <option value="" disabled selected>please select...</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span>City：</span>
+            <select id="citySelectDom"  value="">
+                <option value="" disabled selected>please select...</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span>Status：</span>
+            <select id="statusSelectDom"  value="">
+                <option value="" disabled selected>please select...</option>
+                <option value="1">Activated</option>
+                <option value="0">Unactivated</option>
+            </select>
+        </div>
+        <div class="filter-item">
+            <span>Caption：</span>
+            <input type="text" id="captionInputDom" placeholder="please enter">
+        </div>
+        <div class="filter-item">
+            <button onclick="getFundraiserList()">Search</button>
+            <button onclick="resetData()">Reset</button>
+            <a href="detail.html"><button class="primary-btn">Add</button></a>
+        </div>
+    </div>
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Organizer</th>
+            <th>Category</th>
+            <th>Caption</th>
+            <th>Target Funding</th>
+            <th>Current Funding</th>
+            <th>City</th>
+            <th>Status</th>
+            <th width="120">Operation</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Render against data -->
+        </tbody>
+    </table>
+</main>
+</body>
+<script src="js/ajax.js"></script>
+<script>
+    const oCategorySelectDom = document.getElementById('categorySelectDom');
+    const oOrganizerSelectDom = document.getElementById('organizerSelectDom');
+    const oCitySelectDom = document.getElementById('citySelectDom');
+    const oStatusSelectDom = document.getElementById('statusSelectDom');
+    const oCaptionInputDom = document.getElementById('captionInputDom');
+    // page show handler
+    window.onpageshow = function() {
+        getAllCategory();
+        getAllOrganizer();
+        getAllCity();
+        getFundraiserList();
+    }
+    // get category filter list
+    function getAllCategory() {
+        oCategorySelectDom.innerHTML = '<option value="" disabled selected>please select...</option>';
+        getService('api/getCategory').then(res => {
+            console.log(res);
+            res.forEach(item => {
+                const oOption = document.createElement('option');
+                oOption.innerText = item.name;
+                oOption.value = item.category_id;
+                console.log(oOption);
+                oCategorySelectDom.appendChild(oOption);
+            });
+        }).catch(error => {
+            console.log(error)
+        });
+    }
+    // get organizer filter list
+    function getAllOrganizer() {
+        oOrganizerSelectDom.innerHTML = '<option value="" disabled selected>please select...</option>';
+        getService('api/getOrganizer').then(res => {
+            console.log(res);
+            res.forEach(item => {
+                const oOption = document.createElement('option');
+                oOption.innerText = item.organizer;
+                oOption.value = item.organizer;
+                oOrganizerSelectDom.appendChild(oOption);
+            });
+        }).catch(error => {
+            console.log(error)
+        });
+    }
+    // get city filter list
+    function getAllCity() {
+        oCitySelectDom.innerHTML = '<option value="" disabled selected>please select...</option>';
+        getService('api/getCity').then(res => {
+            console.log(res);
+            res.forEach(item => {
+                const oOption = document.createElement('option');
+                oOption.innerText = item.city;
+                oOption.value = item.city;
+                oCitySelectDom.appendChild(oOption);
+            });
+        }).catch(error => {
+            console.log(error)
+        });
+    }
+    // get all data by filter item
+    function getFundraiserList() {
+        getService(`api/getAllDataList`, {
+            time: new Date().getTime(),
+            category_id: oCategorySelectDom.value,
+            organizer: oOrganizerSelectDom.value,
+            city: oCitySelectDom.value,
+            active: oStatusSelectDom.value,
+            caption: oCaptionInputDom.value
+        }).then(res => {
+            setTableData(res);
+        }).catch(error => {
+            console.log(error)
+        });
+    }
+    // render dom
+    function setTableData(data) {
+        const tbody = document.getElementsByTagName('tbody')[0];
+        // reset element
+        tbody.innerHTML = '';
+        if (data.length < 1) {
+            tbody.innerHTML = '<div style="text-align: center;font-weight: bold;color: #FF0000">NO DATA</div>';
+        } else {
+            data.forEach(o => {
+                // create tr
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${o.organizer}</td>
+                    <td>${o.category_name}</td>
+                    <td>${o.caption}</td>
+                    <td><span class="amount">${o.target_funding}</span> <span class="unit">AUD</span> </td>
+                    <td><span class="amount">${o.current_funding}</span> <span class="unit">AUD</span></td>
+                    <td>${o.city}</td>
+                    <td>
+                        <span class="active" style="display: ${o.active == 1 ? 'block' : 'none'}">Activated</span>
+                        <span class="unactive" style="display: ${o.active == 0 ? 'block' : 'none'}">Unactivated</span>
+                    </td>
+                    <td>
+                        <div style="display: flex;align-items: center">
+                            <a href="./detail.html?id=${o.fundraiser_id}"><button>Edit</button></a>
+                            <button class="delete-btn" id="delete-btn-${o.fundraiser_id}">Delete</button>
+                        </div>
+                    </td>
+            `;
+                tbody.appendChild(tr);
+                const btn = document.getElementById(`delete-btn-${o.fundraiser_id}`);
+                // delete handler
+                btn.onclick = () => {
+                    if (+o.current_funding > 0) {
+                        alert('Existing donations cannot be deleted');
+                        return;
+                    }
+                    const flag = window.confirm('Do you want to delete it?');
+                    if (flag) {
+                        deleteService('api/deleteFundraiser/' + o.fundraiser_id).then(res => {
+                            // delete success
+                            alert('delete successful');
+                            getFundraiserList();
+                        });
+                    }
+                }
+            });
+        }
+    }
+    // reset all data
+    function resetData() {
+        oOrganizerSelectDom.value = '';
+        oCitySelectDom.value = '';
+        oCategorySelectDom.value = '';
+        oStatusSelectDom.value = '';
+        oCaptionInputDom.value = '';
+        getFundraiserList();
+    }
+</script>
+</html>
